@@ -1,0 +1,696 @@
+================================================================================
+          VIRTUAL MEMORY SIMULATOR - FIVE VALIDATION RUNS
+          Configuration & Address Traces Reference File
+================================================================================
+
+
+================================================================================
+  RUN 1: THE GOLDEN TRACE
+================================================================================
+  Purpose : Total Page Faults and EAT must match expected values.
+            Tests all replacement paths with a realistic mixed trace.
+  Focus   : WP2 (Depth of Analysis)
+--------------------------------------------------------------------------------
+
+  --- Parameters.json ---
+  {
+      "physical_size": 262144,
+      "page_size": 4096,
+      "TLB_size": 16,
+      "virtual_size": 18446744073709551615,
+      "latency": 10
+  }
+
+  Derived: 64 frames (262144 / 4096), 12 offset bits
+
+  --- Addresses (addresses.txt) ---
+0x1A3F
+0x2B10
+0x3C44
+0x4D88
+0x5EFC
+0x6010
+0x7120
+0x8230
+0x9340
+0xA450
+0xB560
+0xC670
+0xD780
+0xE890
+0xF9A0
+0x10AB0
+0x11BC0
+0x12CD0
+0x13DE0
+0x14EF0
+0x15000
+0x16110
+0x17220
+0x18330
+0x19440
+0x1A550
+0x1B660
+0x1C770
+0x1D880
+0x1E990
+0x1FAA0
+0x20BB0
+0x21CC0
+0x22DD0
+0x23EE0
+0x24FF0
+0x25100
+0x26210
+0x27320
+0x28430
+0x29540
+0x2A650
+0x2B760
+0x2C870
+0x2D980
+0x2EA90
+0x2FBA0
+0x30CB0
+0x31DC0
+0x32ED0
+0x33FE0
+0x340F0
+0x35200
+0x36310
+0x37420
+0x38530
+0x39640
+0x3A750
+0x3B860
+0x3C970
+0x3DA80
+0x3EB90
+0x3FCA0
+0x40DB0
+0x41EC0
+0x1A3F
+0x2B10
+0x5EFC
+0x9340
+0xD780
+0x13DE0
+0x19440
+0x1FAA0
+0x25100
+0x2B760
+0x31DC0
+0x38530
+0x3EB90
+0x42FD0
+0x440E0
+0x451F0
+0x46300
+0x47410
+0x48520
+0x49630
+0x1A3F
+0x2B10
+0x3C44
+0x4D88
+0x5EFC
+0x6010
+0x7120
+0x8230
+0x42FD0
+0x440E0
+0x451F0
+0x46300
+0x47410
+0x48520
+0x49630
+0x1A3F
+0x1A00
+0x1B00
+0x1A3F
+0x2B10
+0x2B99
+0x3C44
+0x3CFF
+0x4D88
+0x5EFC
+0x9340
+0xA450
+0xB560
+0xC670
+0xD780
+0xE890
+0xF9A0
+0x10AB0
+0x11BC0
+0x12CD0
+0x1A3F
+0x2B10
+0x3C44
+0x4D88
+0x5EFC
+0x6010
+0x7120
+0x8230
+0x9340
+0xA450
+0xB560
+0xC670
+0xD780
+0xE890
+0xF9A0
+0x10AB0
+0x11BC0
+0x12CD0
+0x13DE0
+0x14EF0
+0x15000
+0x16110
+0x17220
+0x18330
+0x19440
+0x1A550
+0x1B660
+0x1C770
+0x1D880
+0x1E990
+
+  --- Expected Results ---
+  | Metric          | FIFO     | LRU      | OPT      |
+  |-----------------|----------|----------|----------|
+  | TLB Hit Rate    | 17.33%   | 22%      | 39.33%   |
+  | RAM Reads       | 94       | 91       | 76       |
+  | RAM Writes      | 30       | 30       | 30       |
+  | Dirty Evictions | 7        | 6        | 4        |
+  | EAT             | 66.2 ns  | 58.87 ns | 42.8 ns  |
+  | Total Requests  | 150      | 150      | 150      |
+
+
+================================================================================
+  RUN 2: WRITE-BACK STRESS
+================================================================================
+  Purpose : Write-heavy trace shows significantly higher Simulated Time
+            due to dirty page eviction penalties.
+  Focus   : WK4 (Specialist Knowledge)
+  Note    : Uses a hot working set (VPN 1-5) so FIFO and LRU diverge.
+--------------------------------------------------------------------------------
+
+  --- Parameters.json ---
+  {
+      "physical_size": 262144,
+      "page_size": 4096,
+      "TLB_size": 16,
+      "virtual_size": 18446744073709551615,
+      "latency": 10
+  }
+
+  Derived: 64 frames, 12 offset bits
+
+  --- Addresses (addresses.txt) ---
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x6000
+0x7000
+0x8000
+0x9000
+0xA000
+0xB000
+0xC000
+0xD000
+0xE000
+0xF000
+0x10000
+0x11000
+0x12000
+0x13000
+0x14000
+0x15000
+0x16000
+0x17000
+0x18000
+0x19000
+0x1A000
+0x1B000
+0x1C000
+0x1D000
+0x1E000
+0x1F000
+0x20000
+0x21000
+0x22000
+0x23000
+0x24000
+0x25000
+0x26000
+0x27000
+0x28000
+0x29000
+0x2A000
+0x2B000
+0x2C000
+0x2D000
+0x2E000
+0x2F000
+0x30000
+0x31000
+0x32000
+0x33000
+0x34000
+0x35000
+0x36000
+0x37000
+0x38000
+0x39000
+0x3A000
+0x3B000
+0x3C000
+0x3D000
+0x3E000
+0x3F000
+0x40000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x41000
+0x42000
+0x43000
+0x44000
+0x45000
+0x46000
+0x47000
+0x48000
+0x49000
+0x4A000
+0x4B000
+0x4C000
+0x4D000
+0x4E000
+0x4F000
+0x50000
+0x51000
+0x52000
+0x53000
+0x54000
+0x55000
+0x56000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x57000
+0x58000
+0x59000
+0x5A000
+0x5B000
+0x5C000
+0x5D000
+0x5E000
+0x5F000
+0x60000
+0x61000
+0x62000
+0x63000
+0x64000
+0x65000
+0x66000
+0x67000
+0x68000
+0x69000
+0x6A000
+0x6B000
+0x6C000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x6D000
+0x6E000
+0x6F000
+0x70000
+0x71000
+0x72000
+0x73000
+0x74000
+0x75000
+0x76000
+0x77000
+0x78000
+0x79000
+0x7A000
+0x7B000
+0x7C000
+0x7D000
+0x7E000
+0x7F000
+0x80000
+0x81000
+0x82000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x83000
+0x84000
+0x85000
+0x86000
+0x87000
+0x88000
+0x89000
+0x8A000
+0x8B000
+0x8C000
+0x8D000
+0x8E000
+0x8F000
+0x90000
+0x91000
+0x92000
+0x93000
+0x94000
+0x95000
+0x96000
+0x97000
+0x98000
+
+  --- Expected Results ---
+  | Metric          | FIFO       | LRU        | OPT       |
+  |-----------------|------------|------------|-----------|
+  | TLB Hit Rate    | 0%         | 0%         | 7.77%     |
+  | RAM Reads       | 206        | 206        | 142       |
+  | RAM Writes      | 42         | 42         | 42        |
+  | Dirty Evictions | 29         | 29         | 16        |
+  | EAT             | 165.85 ns  | 165.85 ns  | 98.86 ns  |
+  | Total Requests  | 206        | 206        | 206       |
+
+  Note: FIFO and LRU are identical with a purely sequential flood,
+        but diverge when the hot working set (VPN 1-5) is re-accessed.
+
+
+================================================================================
+  RUN 3: MICRO-PAGE SCALING
+================================================================================
+  Purpose : Simulator must remain stable, correctly extract VPN/Offset
+            without memory leaks using 16-byte micro pages.
+  Focus   : WK3 (Engineering Fundamentals)
+  Note    : Uses the SAME addresses as Run 2 (Trb.txt), only page_size
+            changes to 16 bytes.
+--------------------------------------------------------------------------------
+
+  --- Parameters.json ---
+  {
+      "physical_size": 262144,
+      "page_size": 16,
+      "TLB_size": 16,
+      "virtual_size": 18446744073709551615,
+      "latency": 10
+  }
+
+  Derived: 16384 frames (262144 / 16), 4 offset bits
+
+  --- Addresses (addresses.txt) ---
+  SAME AS RUN 2 (copy the Write-Back Stress addresses above)
+
+  --- Expected Results ---
+  | Metric          | FIFO     | LRU      | OPT      |
+  |-----------------|----------|----------|----------|
+  | TLB Hit Rate    | 17.14%   | 20%      | 28.57%   |
+  | RAM Reads       | 125      | 125      | 125      |
+  | RAM Writes      | 35       | 35       | 35       |
+  | Dirty Evictions | 0        | 0        | 0        |
+  | EAT             | 20.43 ns | 20.14 ns | 19.29 ns |
+  | Total Requests  | 175      | 175      | 175      |
+  | Frames Used     | 125      | 125      | 125      |
+
+  Key: 0 dirty evictions (16384 frames >> 125 VPNs used)
+       All 3 algorithms now produce DIFFERENT TLB hit rates.
+
+
+================================================================================
+  RUN 4: TEMPORAL LOCALITY
+================================================================================
+  Purpose : TLB Hit Rate near 90-100%, EAT near TLB access time.
+            Only 5 unique VPNs repeated heavily.
+  Focus   : WP1 (Conflicting Requirements)
+--------------------------------------------------------------------------------
+
+  --- Parameters.json ---
+  {
+      "physical_size": 262144,
+      "page_size": 4096,
+      "TLB_size": 16,
+      "virtual_size": 18446744073709551615,
+      "latency": 10
+  }
+
+  Derived: 64 frames, 12 offset bits
+
+  --- Addresses (addresses.txt) ---
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1ABC
+0x2DEF
+0x3A00
+0x4B00
+0x5C00
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+
+  --- Expected Results ---
+  | Metric          | FIFO  | LRU   | OPT   |
+  |-----------------|-------|-------|-------|
+  | TLB Hit Rate    | 95%   | 95%   | 95%   |
+  | RAM Reads       | 5     | 5     | 5     |
+  | RAM Writes      | 20    | 20    | 20    |
+  | Dirty Evictions | 0     | 0     | 0     |
+  | EAT             | 6 ns  | 6 ns  | 6 ns  |
+  | Total Requests  | 100   | 100   | 100   |
+  | Frames Used     | 5     | 5     | 5     |
+
+  Key: All 3 algorithms identical. With only 5 VPNs fitting in
+       16 TLB entries, no eviction ever happens. Replacement
+       policy is irrelevant.
+
+
+================================================================================
+  RUN 5: COLD START
+================================================================================
+  Purpose : Start with empty TLB and RAM. First N accesses
+            (N = 64 frames) must all be Page Faults + TLB Misses.
+            Then repeats show TLB hits (OPT uses lookahead).
+  Focus   : Stability & correctness under cold-start conditions
+--------------------------------------------------------------------------------
+
+  --- Parameters.json ---
+  {
+      "physical_size": 262144,
+      "page_size": 4096,
+      "TLB_size": 16,
+      "virtual_size": 18446744073709551615,
+      "latency": 10
+  }
+
+  Derived: 64 frames, 12 offset bits
+
+  --- Addresses (addresses.txt) ---
+0x0000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x6000
+0x7000
+0x8000
+0x9000
+0xA000
+0xB000
+0xC000
+0xD000
+0xE000
+0xF000
+0x10000
+0x11000
+0x12000
+0x13000
+0x14000
+0x15000
+0x16000
+0x17000
+0x18000
+0x19000
+0x1A000
+0x1B000
+0x1C000
+0x1D000
+0x1E000
+0x1F000
+0x20000
+0x21000
+0x22000
+0x23000
+0x24000
+0x25000
+0x26000
+0x27000
+0x28000
+0x29000
+0x2A000
+0x2B000
+0x2C000
+0x2D000
+0x2E000
+0x2F000
+0x30000
+0x31000
+0x32000
+0x33000
+0x34000
+0x35000
+0x36000
+0x37000
+0x38000
+0x39000
+0x3A000
+0x3B000
+0x3C000
+0x3D000
+0x3E000
+0x3F000
+0x0000
+0x1000
+0x2000
+0x3000
+0x4000
+0x5000
+0x6000
+0x7000
+0x8000
+0x9000
+
+  --- Expected Results ---
+  | Metric          | FIFO      | LRU       | OPT       |
+  |-----------------|-----------|-----------|-----------|
+  | TLB Hit Rate    | 0%        | 0%        | 13.51%    |
+  | RAM Reads       | 64        | 64        | 64        |
+  | RAM Writes      | 15        | 15        | 15        |
+  | Dirty Evictions | 0         | 0         | 0         |
+  | EAT             | 23.70 ns  | 23.70 ns  | 22.35 ns  |
+  | Total Requests  | 74        | 74        | 74        |
+  | Frames Used     | 64        | 64        | 64        |
+
+  Key: OPT gets 13.5% TLB hits because it "knows" VPN 0-9 will be
+       re-accessed. FIFO/LRU can't predict this, so 0% hit rate.
+
+
+================================================================================
+  SUMMARY TABLE - ALL FIVE RUNS
+================================================================================
+
+  | Run | Scenario           | Pages | Frames | Requests | FIFO EAT  | LRU EAT   | OPT EAT  |
+  |-----|--------------------|-------|--------|----------|-----------|-----------|----------|
+  |  1  | Golden Trace       | 4 KB  |   64   |   150    | 66.20 ns  | 58.87 ns  | 42.80 ns |
+  |  2  | Write-Back Stress  | 4 KB  |   64   |   206    | 165.85 ns | 165.85 ns | 98.86 ns |
+  |  3  | Micro-Page Scaling | 16 B  | 16384  |   175    | 20.43 ns  | 20.14 ns  | 19.29 ns |
+  |  4  | Temporal Locality  | 4 KB  |   64   |   100    | 6.00 ns   | 6.00 ns   | 6.00 ns  |
+  |  5  | Cold Start         | 4 KB  |   64   |    74    | 23.70 ns  | 23.70 ns  | 22.35 ns |
+
+================================================================================

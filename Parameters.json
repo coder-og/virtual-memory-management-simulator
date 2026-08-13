@@ -1,0 +1,7 @@
+{
+    "physical_size": 262144,
+    "page_size": 4096,
+    "TLB_size": 16,
+    "virtual_size": 18446744073709551615,
+    "latency": 10
+}
