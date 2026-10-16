@@ -1,147 +1,65 @@
-
 # Virtual Memory Management Simulator
 
-## About
+C++17 coursework simulator for address decomposition, TLB caching, page replacement and simplified memory-latency accounting. It compares FIFO, LRU and OPT on the same hexadecimal address trace, with an optional raylib view.
 
-A high-performance C++ simulator that models the complete MMU pipeline, including TLB caching, page table translation, and hardware latency metrics. It implements FIFO, LRU, and Optimal replacement algorithms to analyze page fault rates and calculate the system's Effective Access Time (EAT).
+## Build and run
 
----
+Requirements: C++17 compiler, CMake 3.16+, and JsonCpp. On Ubuntu/Debian:
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Page Replacement Algorithms](#page-replacement-algorithms)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Input Format](#input-format)
-- [Performance Metrics](#performance-metrics)
-- [How It Works](#how-it-works)
-
----
-
-## Overview
-
-This project simulates the **complete virtual-to-physical memory translation pipeline** found in modern operating systems. It models the following hardware and software components:
-
-| Component | Function |
-| :--- | :--- |
-| **TLB (Translation Lookaside Buffer)** | A small, fast cache for recent VPN → Frame translations. |
-| **Page Table** | The full VPN → Physical Frame mapping with dirty/valid bits. |
-| **RAM** | A byte-addressable physical memory array simulation. |
-| **Hard Disk** | The backing store for dirty page write-backs and page loading. |
-
-The simulator processes a stream of hexadecimal virtual addresses, translates them through the hierarchy, applies replacement policies during memory pressure, and reports final performance analytics.
-
----
-
-## Architecture
-
-
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│                     Virtual Address                     │
-│              ┌──────────────┬──────────┐                │
-│              │     VPN      │  Offset  │                │
-│              └──────┬───────┴─────┬────┘                │
-│                     │             │                     │
-│              ┌──────▼──────┐      │                     │
-│              │     TLB     │      │                     │
-│              | (has algos) │      │                     │
-│              └──┬─────┬─── ┘      │                     │
-│            Hit  │     │ Miss      │                     │
-│              ┌──▼─────▼───┐       │                     │
-│              │ Page Table │       │                     │
-│              │ (FIFO/LRU/ │       │                     │
-│              │    OPT)    │       │                     │
-│              └──────┬──────┘      │                     │
-│                     │ Frame #     │                     │
-│              ┌──────▼─────────────▼───┐                 │
-│              │         RAM            │                 │
-│              │  memory[frame][offset] │                 │
-│              └──────────┬─────────────┘                 │
-│                         │ Dirty eviction                │
-│              ┌──────────▼─────────────┐                 │
-│              │     HardDisk.txt       │                 │
-│              │    (Backing Store)     │                 │
-│              └────────────────────────┘                 │
-└─────────────────────────────────────────────────────────┘
+```sh
+sudo apt install build-essential cmake libjsoncpp-dev
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+mkdir -p run
+cp Parameters.json addresses.txt run/
+cd run
+../build/memory_simulator
 ```
 
----
+The program reads input files from the working directory and overwrites its output logs. Use `run/` to preserve committed examples. On Windows install JsonCpp through vcpkg and configure CMake with its toolchain; for Visual Studio builds the executable is under `build/Debug/` (or the selected configuration).
 
-## Page Replacement Algorithms
+The console executable runs FIFO, LRU and OPT sequentially. The optional GUI needs raylib 5.5:
 
-The simulator implements **three** classic strategies, executed independently on the same address trace for performance comparison:
+```sh
+cmake -S . -B build -DBUILD_GUI=ON
+cmake --build build
+# From run/ after copying the inputs:
+../build/memory_gui fifo
+# Alternatives: lru, opt. Close the window to end a run.
+```
 
-### 1. FIFO (First-In, First-Out)
-* **Logic**: Evicts the **oldest** page in memory—the one loaded first.
-* **Implementation**: Simple queue-based logic using `std::list`.
-* **Logging**: Traces every eviction event to `FIFO_logging.txt`.
+## Architecture and inputs
 
-### 2. LRU (Least Recently Used)
-* **Logic**: Evicts the page that hasn't been accessed for the **longest time**.
-* **Implementation**: $O(1)$ lookup and update via `unordered_map` paired with a doubly-linked list.
-* **Logging**: Traces eviction events to `log.txt`.
+| Source | Responsibility |
+|---|---|
+| `FileConfiguration.*` | JSON parameters, hexadecimal trace, VPN/offset calculation |
+| `TLB_table.*` | FIFO/LRU/OPT cache policies and hit/miss metrics |
+| `Page_frame.*` | Page table, frame assignment, eviction, dirty tracking |
+| `Ram_memory.*` | In-memory byte arrays |
+| `Virtual_Memory_manager.*` | Console execution paths |
+| `Drawer.cpp`, `mem_visualization.h` | Optional GUI |
+| `OS_project.cpp`, `gui_main.cpp` | Console and GUI entry points |
 
-### 3. OPT (Optimal / Bélády's Algorithm)
-* **Logic**: Evicts the page that will **not be used for the longest time** in the future.
-* **Implementation**: Pre-computes a lookahead buffer of all future VPN references to determine the ideal victim.
-* **Logging**: Traces results to `OPT_logging`.
+`Parameters.json` currently specifies 262144 bytes of RAM, 4096-byte pages, 16 TLB entries and latency 10. `virtual_size` is treated by this implementation as an **inclusive maximum address**, not a byte count. Page size must be a positive power of two, RAM must hold whole pages and TLB capacity must be positive.
 
----
+`addresses.txt` contains whitespace-separated hexadecimal addresses. Every fifth access, starting at index 0, is treated as a write; the remaining accesses are reads. The input does not encode arbitrary read/write operations.
 
-## Project Structure
+## Outputs and interpretation
 
-* **`OS_project.cpp`**: Main entry point; executes FIFO, LRU, and OPT sequentially.
-* **`Virtual_Memory_manager.h/cpp`**: Orchestration logic for the three simulation modes.
-* **`TLB_table.h/cpp`**: TLB cache implementation, management, and metrics.
-* **`Page_frame.h/cpp`**: Page table logic, dirty-bit tracking, and disk I/O.
-* **`Ram_memory.h/cpp`**: Physical memory array and `Page_frame_node` definitions.
-* **`FileConfiguration.h/cpp`**: Helper class to parse JSON parameters and hexadecimal addresses.
-* **`Parameters.json`**: Global simulation settings (memory size, latencies).
-* **`addresses.txt`**: Input file containing hexadecimal virtual addresses.
+- `comparison_metrics.csv`: FIFO/LRU/OPT request counts, TLB hits/misses, hit rate, RAM counters, dirty evictions and EAT.
+- `FIFO_logging.txt`, `log.txt`, `OPT_logging`: policy traces.
+- `HardDisk.txt`: appended dirty-frame dumps; reset between policy runs.
 
----
+EAT is a simulated weighted cost, not measured CPU performance: lookup 1 ns/request, TLB miss 10 ns, RAM read `latency`, write `2*latency`, dirty eviction 1000 ns. Final destructor flushing is not included in the printed eviction/EAT metrics. RAM-read accounting differs between code paths, so EAT comparisons need care.
 
-## Configuration
+## Verification and limitations
 
-Modify **`Parameters.json`** to stress-test the system:
+Core checks cover known VPN/offset decomposition, LRU cache eviction, invalidation and FIFO dirty-frame replacement. CI builds the console and optional GUI and runs the checks.
 
-| Parameter | Description | Default |
-| :--- | :--- | :--- |
-| `physical_size` | Total physical memory (Bytes) | `40960` (40 KB) |
-| `page_size` | Size of each page (Bytes) | `4096` (4 KB) |
-| `TLB_size` | Number of TLB cache entries | `4` |
-| `latency` | RAM access latency (ns) | `10` |
+This is not a full persistent virtual memory implementation: evicted page contents are dumped but not read back by VPN, and frame reuse does not restore backing-store contents. `HardDisk.txt` is therefore an educational write-back log, not a true swap file. OPT uses future trace knowledge as an offline comparison policy. GUI entries iterate an unordered map and do not represent fixed hardware slots.
 
----
-
-## Performance Metrics
-
-The simulator calculates several key indicators to determine efficiency:
-
-* **TLB Hit Rate**: Percentage of addresses resolved by the cache.
-* **RAM Reads/Writes**: Total data movement between the CPU and simulated RAM.
-* **Dirty Evictions**: Number of times a modified page had to be written back to disk.
-* **Effective Access Time (EAT)**: The weighted average time per request.
-
-### EAT Calculation
-$$EAT = \frac{(Req \times 1ns) + (Miss \times 10ns) + (Reads \times Lat) + (Writes \times Lat \times 2) + (Dirty \times 1000ns)}{Total Requests}$$
-
----
-
-## How It Works
-
-1.  **Address Decomposition**: Virtual addresses are split into **VPN** and **Offset** via bitwise shifting.
-2.  **Hierarchical Lookup**:
-    * **TLB Hit**: Instant frame resolution.
-    * **TLB Miss**: Walk the Page Table.
-    * **Page Fault**: Load from `HardDisk.txt`, potentially triggering eviction.
-3.  **Eviction Cycle**: If RAM is full, the chosen algorithm selects a victim. If the **dirty bit** is set, it triggers a 1000ns write-back penalty to `HardDisk.txt`.
-4.  **Shutdown**: Upon termination, all remaining dirty pages are flushed to disk to ensure data persistence.
-
+The original report and screenshots are retained below as historical coursework material. Their settings may differ from the included default configuration. A license and per-person team contributions require the owner's decision.
 
 **GUI OUTPUT**
 For this data
@@ -154,6 +72,3 @@ For LRU:
    <img width="1105" height="780" alt="image" src="https://github.com/user-attachments/assets/8fc4559b-e34f-4c39-8b35-85af22b23fe1" />
 For OPT:
    <img width="1113" height="766" alt="image" src="https://github.com/user-attachments/assets/92c2eca2-4a25-4c12-892d-6858a68b5eba" />
-
-
-

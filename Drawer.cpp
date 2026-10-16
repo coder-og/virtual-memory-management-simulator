@@ -40,7 +40,7 @@ void Drawer::Runner1() {
             }
             else {
                
-                unsigned long long p_frame = pages.getPhysicalAddress(vpn, offset, is_write, cache, x);
+                unsigned long long p_frame = pages.getPhysicalAddress(vpn, offset, is_write, cache, false, x);
                
                 cache.insert_with_LRU_algo(vpn, p_frame, true);
             }
