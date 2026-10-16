@@ -39,7 +39,7 @@ public:
 	bool isFrameDirty(int frameIndex) {
 		
 		for (auto const& [vpn, node] : table) {
-			if (node.physical_memory / 4096 == frameIndex) {
+			if (node.physical_memory == static_cast<unsigned long long>(frameIndex)) {
 				return node.dirty_bit;
 			}
 		}

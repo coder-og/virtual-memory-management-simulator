@@ -42,7 +42,7 @@ void Virtual_Memory_manager::Runner() {
       pages.getPhysicalAddress(vpn, offset, is_write, cache, found, x);
     }
     if (!found) {
-      unsigned long long p_frame = pages.getPhysicalAddress(vpn, offset, is_write, cache, x);
+      unsigned long long p_frame = pages.getPhysicalAddress(vpn, offset, is_write, cache, false, x);
       if (lru_log.is_open()) {
         lru_log << "[LRU] Request #" << instruction_count
                 << " | Addr: 0x" << hex << address << dec

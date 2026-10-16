@@ -1,0 +1,18 @@
+name: C++ build and checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libjsoncpp-dev libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev
+      - run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git /tmp/raylib
+          cmake -S /tmp/raylib -B /tmp/raylib-build -DBUILD_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=/tmp/raylib-install
+          cmake --build /tmp/raylib-build --parallel 2
+          cmake --install /tmp/raylib-build
+      - run: cmake -S . -B build -DBUILD_GUI=ON -DCMAKE_PREFIX_PATH=/tmp/raylib-install
+      - run: cmake --build build --parallel 2
+      - run: ctest --test-dir build --output-on-failure
